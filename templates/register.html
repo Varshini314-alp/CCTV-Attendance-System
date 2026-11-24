@@ -1,0 +1,408 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Registration | CCTV Attendance</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f8;
+            padding: 30px 15px;
+            margin: 0;
+            color: #26344d;
+        }
+
+        .container {
+            width: 600px;
+            max-width: 100%;
+            margin: auto;
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            text-align: center;
+            color: #263c65;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: #263c65;
+            margin-top: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 7px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccd3df;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #263c65;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            background: #263c65;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #182b4c;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        video {
+            width: 100%;
+            margin-top: 10px;
+            background: #222;
+            border-radius: 8px;
+            min-height: 200px;
+        }
+
+        #preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        #preview img {
+            width: 85px;
+            height: 85px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .info {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .section {
+            border-top: 1px solid #e2e6ed;
+            padding-top: 15px;
+            margin-top: 20px;
+        }
+
+        .submit-btn {
+            background: #16834b;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background: #11663a;
+        }
+
+        #photoCount {
+            font-weight: bold;
+            color: #263c65;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Employee Registration</h2>
+
+    <p class="info">
+        Enter employee information and capture clear training
+        photos for face recognition.
+    </p>
+
+    <form id="registerForm"
+          action="/register"
+          method="POST"
+          enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label>Employee ID *</label>
+            <input type="text"
+                   name="employee_id"
+                   placeholder="Enter Employee ID"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label>Employee Name *</label>
+            <input type="text"
+                   name="name"
+                   placeholder="Enter Employee Name"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label>Department *</label>
+            <input type="text"
+                   name="department"
+                   placeholder="Enter Department"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label>Designation *</label>
+            <input type="text"
+                   name="designation"
+                   placeholder="Enter Designation"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel"
+                   name="phone"
+                   placeholder="Enter Phone Number"
+                   pattern="[0-9]{10}"
+                   maxlength="10"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label>Joining Date *</label>
+            <input type="date"
+                   name="joining_date"
+                   required>
+        </div>
+
+        <div class="section">
+
+            <h3>Employee Profile Photo</h3>
+
+            <div class="form-group">
+                <label>Upload Main Employee Photo *</label>
+                <input type="file"
+                       name="photo"
+                       accept="image/jpeg,image/png,image/jpg"
+                       required>
+            </div>
+
+        </div>
+
+        <div class="section">
+
+            <h3>Face Recognition Training Photos</h3>
+
+            <p class="info">
+                Capture at least 3 and up to 10 clear photos.
+                Use slightly different angles and lighting conditions.
+            </p>
+
+            <video id="camera" autoplay playsinline></video>
+
+            <button type="button" id="startCamera">
+                Start Camera
+            </button>
+
+            <button type="button" id="capturePhoto">
+                Capture Photo
+            </button>
+
+            <button type="button" id="stopCamera">
+                Stop Camera
+            </button>
+
+            <p id="photoCount">Captured photos: 0 / 10</p>
+
+            <div id="preview"></div>
+
+            <input type="hidden"
+                   name="captured_photos"
+                   id="capturedPhotos">
+
+        </div>
+
+        <button type="submit" class="submit-btn">
+            Register Employee
+        </button>
+
+    </form>
+
+</div>
+
+<script>
+
+    const video = document.getElementById("camera");
+    const preview = document.getElementById("preview");
+
+    const photoCount = document.getElementById("photoCount");
+
+    const capturedPhotosInput =
+        document.getElementById("capturedPhotos");
+
+    const registerForm =
+        document.getElementById("registerForm");
+
+    let stream = null;
+    let capturedPhotos = [];
+
+    // Start webcam
+    document.getElementById("startCamera").onclick =
+        async function () {
+
+            try {
+
+                if (stream) return;
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "user"
+                    },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+
+                await video.play();
+
+            } catch (error) {
+
+                alert(
+                    "Camera could not start. Please allow camera access."
+                );
+
+                console.error(error);
+            }
+        };
+
+
+    // Capture training photo
+    document.getElementById("capturePhoto").onclick =
+        function () {
+
+            if (!stream) {
+
+                alert("Please start the camera first.");
+                return;
+            }
+
+            if (capturedPhotos.length >= 10) {
+
+                alert("Maximum 10 training photos allowed.");
+                return;
+            }
+
+            if (!video.videoWidth || !video.videoHeight) {
+
+                alert("Camera is not ready. Please try again.");
+                return;
+            }
+
+            const canvas = document.createElement("canvas");
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            const context = canvas.getContext("2d");
+
+            context.drawImage(
+                video,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            const imageData =
+                canvas.toDataURL("image/jpeg", 0.85);
+
+            capturedPhotos.push(imageData);
+
+            capturedPhotosInput.value =
+                JSON.stringify(capturedPhotos);
+
+            const image = document.createElement("img");
+
+            image.src = imageData;
+            image.alt = "Training photo";
+
+            preview.appendChild(image);
+
+            photoCount.textContent =
+                "Captured photos: " +
+                capturedPhotos.length + " / 10";
+        };
+
+
+    // Stop webcam
+    function stopCamera() {
+
+        if (stream) {
+
+            stream.getTracks().forEach(track => track.stop());
+
+            video.srcObject = null;
+
+            stream = null;
+        }
+    }
+
+    document.getElementById("stopCamera").onclick =
+        stopCamera;
+
+
+    // Validate registration
+    registerForm.onsubmit = function () {
+
+        if (capturedPhotos.length < 3) {
+
+            alert("Please capture at least 3 training photos.");
+
+            return false;
+        }
+
+        if (capturedPhotos.length > 10) {
+
+            alert("Maximum 10 training photos allowed.");
+
+            return false;
+        }
+
+        return true;
+    };
+
+
+    // Stop webcam when leaving the page
+    window.addEventListener("beforeunload", stopCamera);
+
+</script>
+
+</body>
+</html>

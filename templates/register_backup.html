@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Registration</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f4f8;
+            padding: 30px;
+        }
+
+        .container {
+            width: 400px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #263c65;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #263c65;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Employee Registration</h2>
+
+        <form action="/register" method="POST"
+              enctype="multipart/form-data">
+
+            <input type="text" name="employee_id"
+                   placeholder="Employee ID" required>
+
+            <input type="text" name="name"
+                   placeholder="Employee Name" required>
+
+            <input type="text" name="department"
+                   placeholder="Department" required>
+
+            <input type="tel" name="phone"
+                   placeholder="Phone Number" required>
+
+            <label>Upload Employee Photo:</label>
+            <input type="file" name="photo"
+                   accept="image/*" required>
+
+            <button type="submit">Register Employee</button>
+        </form>
+    </div>
+</body>
+</html>

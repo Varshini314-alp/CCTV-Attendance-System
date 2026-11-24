@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management | HRNexa</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 25px;
+            background: #f3f6fb;
+            font-family: Arial, sans-serif;
+            color: #263247;
+        }
+
+        .container { max-width: 1400px; margin: auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 { margin: 0; color: #20365d; font-size: 27px; }
+
+        .subtitle {
+            color: #718096;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .button {
+            background: #3156a3;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .button:hover { background: #203e7c; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 9px rgba(0,0,0,0.04);
+        }
+
+        .stat-card p {
+            color: #718096;
+            margin: 0 0 10px;
+            font-size: 14px;
+        }
+
+        .stat-card h2 {
+            margin: 0;
+            color: #263c65;
+            font-size: 27px;
+        }
+
+        .table-container {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 9px rgba(0,0,0,0.04);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .table-header h2 {
+            color: #263c65;
+            font-size: 19px;
+            margin: 0;
+        }
+
+        .search {
+            padding: 11px 14px;
+            border: 1px solid #dce2ec;
+            border-radius: 7px;
+            width: 280px;
+            max-width: 100%;
+            outline: none;
+        }
+
+        .search:focus { border-color: #3156a3; }
+
+        .table-wrapper { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        th {
+            background: #f2f5fa;
+            color: #53627b;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            text-align: left;
+            padding: 15px 12px;
+        }
+
+        td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 13px;
+            color: #45536b;
+        }
+
+        tr:hover { background: #fafcff; }
+
+        .employee-name {
+            font-weight: bold;
+            color: #263c65;
+        }
+
+        .employee-id {
+            color: #3156a3;
+            font-weight: bold;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #e5f7ed;
+            color: #198754;
+        }
+
+        .inactive {
+            background: #fce8e8;
+            color: #c0392b;
+        }
+
+        .photo {
+            width: 42px;
+            height: 42px;
+            object-fit: cover;
+            border-radius: 50%;
+            background: #e9edf5;
+            border: 1px solid #e1e6ef;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px;
+            color: #8994a7;
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 15px; }
+            .stats { grid-template-columns: 1fr; }
+            .search { width: 100%; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>Employee Management</h1>
+            <div class="subtitle">
+                Manage employee information and employment details
+            </div>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="button">+ Add Employee</a>
+    </div>
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <p>Total Employees</p>
+            <h2>{{ employees|length }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Active Employees</p>
+            <h2 id="activeCount">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Inactive Employees</p>
+            <h2 id="inactiveCount">0</h2>
+        </div>
+
+    </div>
+
+    <div class="table-container">
+
+        <div class="table-header">
+            <h2>Registered Employees</h2>
+
+            <input
+                type="text"
+                id="searchInput"
+                class="search"
+                placeholder="Search ID, name or department..."
+                onkeyup="searchEmployees()"
+            >
+        </div>
+
+        <div class="table-wrapper">
+
+            <table id="employeeTable">
+
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Designation</th>
+                        <th>Phone</th>
+                        <th>Joining Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for employee in employees %}
+
+                    <tr>
+                        <td>
+                            {% if employee[4] %}
+                                <img
+                                    src="{{ url_for('employee_photo', employee_id=employee[0]) }}"
+                                    class="photo"
+                                    alt="Employee photo"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                >
+                                <div class="photo"
+                                     style="display:none; align-items:center; justify-content:center;">
+                                    N/A
+                                </div>
+                            {% else %}
+                                <div class="photo"></div>
+                            {% endif %}
+                        </td>
+
+                        <td class="employee-id">{{ employee[0] }}</td>
+                        <td class="employee-name">{{ employee[1] }}</td>
+                        <td>{{ employee[2] or 'Not assigned' }}</td>
+                        <td>{{ employee[5] or 'Not assigned' }}</td>
+                        <td>{{ employee[3] or 'Not available' }}</td>
+                        <td>{{ employee[6] or 'Not available' }}</td>
+
+                        <td>
+                            {% if employee[7] == 'Inactive' %}
+                                <span class="status inactive">Inactive</span>
+                            {% else %}
+                                <span class="status">Active</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="8" class="empty">
+                            No employees registered yet.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            <div id="noResults" class="empty" style="display:none;">
+                No matching employees found.
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function searchEmployees() {
+        const input = document.getElementById("searchInput");
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll("#employeeTable tbody tr");
+
+        let visible = 0;
+
+        rows.forEach(row => {
+            const matches = row.innerText.toLowerCase().includes(filter);
+            row.style.display = matches ? "" : "none";
+
+            if (matches) visible++;
+        });
+
+        document.getElementById("noResults").style.display =
+            visible === 0 ? "block" : "none";
+    }
+
+    window.addEventListener("DOMContentLoaded", function () {
+        const rows = document.querySelectorAll("#employeeTable tbody tr");
+
+        let active = 0;
+        let inactive = 0;
+
+        rows.forEach(row => {
+            const status = row.cells[7]?.innerText.trim();
+
+            if (status === "Active") active++;
+            if (status === "Inactive") inactive++;
+        });
+
+        document.getElementById("activeCount").innerText = active;
+        document.getElementById("inactiveCount").innerText = inactive;
+    });
+</script>
+
+</body>
+</html>

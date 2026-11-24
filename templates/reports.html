@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Reports</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            padding: 25px;
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        h2, h3 {
+            color: #263238;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
+        input, select, button, a {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .download {
+            background: #218838;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back {
+            display: inline-block;
+            background: #555;
+            color: white;
+            text-decoration: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #263238;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Employee Attendance Reports</h2>
+
+    <a class="back" href="/attendance">
+        Back to Dashboard
+    </a>
+
+    <form method="GET" action="/reports">
+
+        <label>Report Type:</label>
+
+        <select name="type"
+                onchange="this.form.submit()">
+
+            <option value="daily"
+                {% if report_type == 'daily' %}selected{% endif %}>
+                Daily Report
+            </option>
+
+            <option value="monthly"
+                {% if report_type == 'monthly' %}selected{% endif %}>
+                Monthly Report
+            </option>
+
+        </select>
+
+        {% if report_type == 'daily' %}
+
+            <label>Select Date:</label>
+
+            <input
+                type="date"
+                name="date"
+                value="{{ selected_date }}"
+                required
+            >
+
+        {% else %}
+
+            <label>Select Month:</label>
+
+            <input
+                type="month"
+                name="month"
+                value="{{ selected_month }}"
+                required
+            >
+
+        {% endif %}
+
+        <button type="submit">
+            View Report
+        </button>
+
+    </form>
+
+    <a class="download"
+       href="{{ url_for(
+           'export_attendance_report',
+           type=report_type,
+           date=selected_date,
+           month=selected_month
+       ) }}">
+        Download CSV Report
+    </a>
+
+    <h3>
+        {% if report_type == 'daily' %}
+            Daily Attendance Report - {{ selected_date }}
+        {% else %}
+            Monthly Attendance Report - {{ selected_month }}
+        {% endif %}
+    </h3>
+
+    <table>
+
+        <thead>
+            <tr>
+                {% for heading in headers %}
+                    <th>{{ heading }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for record in records %}
+
+                <tr>
+                    {% for value in record %}
+
+                        <td>
+                            {{ value if value is not none else 'Pending' }}
+                        </td>
+
+                    {% endfor %}
+                </tr>
+
+            {% else %}
+
+                <tr>
+                    <td colspan="{{ headers|length }}">
+                        No employee records found.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+</body>
+</html>
